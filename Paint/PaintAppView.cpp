@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "PaintApp.h"
 #include <fstream>
-
+#include <string>
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
 #ifndef SHARED_HANDLERS
@@ -84,6 +84,8 @@ BEGIN_MESSAGE_MAP(CPaintAppView, CView)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_ROTATE, &CPaintAppView::OnUpdateButtonRotate)
 	ON_COMMAND(ID_INDICATOR_EXT, &CPaintAppView::OnIndicatorExt)
 	ON_COMMAND(ID_FILE_SAVE_AS, &CPaintAppView::OnFileSaveAs)
+	ON_COMMAND(ID_FILE_CLOSE, &CPaintAppView::OnFileClose)
+
 	ON_COMMAND(ID_BUTTON_ELIP, &CPaintAppView::OnButtonElip)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_ELIP, &CPaintAppView::OnUpdateButtonElip)
 	ON_COMMAND(ID_BUTTON_ZOOMOUT, &CPaintAppView::OnButtonZoomout)
@@ -117,6 +119,41 @@ BOOL CPaintAppView::PreCreateWindow(CREATESTRUCT& cs)
 
 	return CView::PreCreateWindow(cs);
 }
+string defaultFilePath = "data.bin";
+void CPaintAppView::OnSave()
+{
+	// TODO: Add your command handler code here
+	OPENFILENAME ofn;
+	WCHAR szFileName[MAX_PATH] = L"";
+
+	ZeroMemory(&ofn, sizeof(ofn));
+
+	ofn.lStructSize = sizeof(ofn); // SEE NOTE BELOW
+	ofn.lpstrFilter = L"Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0";
+	ofn.lpstrFile = szFileName;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+	ofn.lpstrDefExt = L"bin";
+	if (GetSaveFileName(&ofn))
+	{
+		// Do something usefull with the filename stored in szFileName 
+		wstring ws(szFileName);
+		// your new String
+		std::setlocale(LC_ALL, "");
+		const std::locale locale("");
+		typedef std::codecvt<wchar_t, char, std::mbstate_t> converter_type;
+		const converter_type& converter = std::use_facet<converter_type>(locale);
+		std::vector<char> to(ws.length() * converter.max_length());
+		std::mbstate_t state;
+		const wchar_t* from_next;
+		char* to_next;
+		const converter_type::result result = converter.out(state, ws.data(), ws.data() + ws.length(), from_next, &to[0], &to[0] + to.size(), to_next);
+		const std::string fileName(&to[0], to_next);
+		defaultFilePath = fileName;
+		saveToBinaryFile(fileName);
+		defaultFilePath = fileName;
+	}
+}
 
 void CPaintAppView::OnDraw(CDC* pDC)
 {
@@ -148,6 +185,10 @@ void CPaintAppView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 {
 	// TODO: add cleanup after printing
 }
+void CPaintAppView::OnDestroy()
+{
+	CView::OnDestroy();
+}
 void CPaintAppView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 {
 	ClientToScreen(&point);
@@ -165,21 +206,21 @@ void CPaintAppView::OnPaint()
 		CBrush brush(shapes[i]->getFillClorr());
 		dc.SelectObject(pen);
 		dc.SelectObject(brush);
-		if (checkZoomIn == true)
+		if (checkZoomIn == TRUE)
 		{
 			shapes[i]->drawZoomIn(&dc);
 		}
-		else if (checkZoomOut == true)
+		else if (checkZoomOut == TRUE)
 		{
 			shapes[i]->drawZoomOut(&dc);
 		}
 		else
 			shapes[i]->Draw(&dc);
-		Invalidate(false);
+		InvalidateRect(&rect, 0);
 	}
 	if (bDown)
 	{
-		//V? nét v? t?m th?i khi ch?a Mouse Up
+		//Mouse Up
 		if (flag == "Null" && pointStart != currentLocation&&isFill==false) {
 			CPen pen(currPenStyle, currPenSize, currColor);
 			dc.SelectObject(pen);
@@ -191,11 +232,11 @@ void CPaintAppView::OnPaint()
 			{
 				ShowLocationMove(&dc, currentLocation);
 			}
-			if (checkZoomIn == true)
+			if (checkZoomIn == TRUE)
 			{
 				currShape->drawZoomIn(&dc);
 			}
-			else if (checkZoomOut == true)
+			else if (checkZoomOut == TRUE)
 			{
 				currShape->drawZoomOut(&dc);
 			}
@@ -204,9 +245,9 @@ void CPaintAppView::OnPaint()
 		}
 	}
 
-	if (checkObject == true) {
+	if (checkObject == TRUE) {
 		if (flag == "move" || flag == "change" ||
-			flag == "rotate" || flag == "delete" || isFill == true) {
+			flag == "rotate" || flag == "delete" || isFill == TRUE) {
 			for (int i = shapes.size() - 1; i >= 0; i--)
 			{
 				if (i == MoveIndex) {
@@ -227,7 +268,7 @@ void CPaintAppView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	CPaintDC dc(this);
 	if (flag == "move" || flag == "change" || flag == "rotate" ||
-		flag == "delete" || isFill == true)
+		flag == "delete" || isFill == TRUE)
 	{
 		for (int i = shapes.size() - 1; i >= 0; i--)
 		{
@@ -238,7 +279,7 @@ void CPaintAppView::OnLButtonDown(UINT nFlags, CPoint point)
 				bDown = true;
 				checkObject = true;
 				checkRotate = true;
-				if (isFill == true) {
+				if (isFill == TRUE) {
 					shapes[i]->setFillClorr(fillColor);
 				}
 				break;
@@ -440,7 +481,7 @@ void CPaintAppView::OnLButtonUp(UINT nFlags, CPoint point)
 	}
 	//xoa hinh
 	else
-		if (flag == "delete" && checkDelete == true) {
+		if (flag == "delete" && checkDelete == TRUE) {
 			shapes.erase(shapes.begin() + MoveIndex);
 			Invalidate();
 		}
@@ -498,7 +539,7 @@ void CPaintAppView::OnMouseMove(UINT nFlags, CPoint point)
 	if (bDown) {
 		if (flag == "move")
 		{
-			if (checkObject == true)
+			if (checkObject == TRUE)
 			{
 				InvalidateRect(&rect, 1);
 				COLORREF currColor_ = shapes[MoveIndex]->getClorr();
@@ -517,7 +558,7 @@ void CPaintAppView::OnMouseMove(UINT nFlags, CPoint point)
 		}
 		else if (flag == "change")
 		{
-			if (checkObject == true) {
+			if (checkObject == TRUE) {
 				int centerx = (shapes[MoveIndex]->getStart().x + shapes[MoveIndex]->getEnd().x) / 2;
 				int centery = (shapes[MoveIndex]->getStart().y + shapes[MoveIndex]->getEnd().y) / 2;
 				if (centerx > point.x&&centery > point.y&&chooseChange != 2)
@@ -679,7 +720,7 @@ void CPaintAppView::OnButtonFill()
 void CPaintAppView::OnUpdateButtonFill(CCmdUI *pCmdUI)
 {
 	// TODO: Add your command update UI handler code here
-	pCmdUI->SetCheck(isFill == true);
+	pCmdUI->SetCheck(isFill == TRUE);
 }
 
 
@@ -914,7 +955,7 @@ void CPaintAppView::OnButtonSolid()
 void CPaintAppView::OnUpdateButtonZoomout(CCmdUI *pCmdUI)
 {
 	// TODO: Add your command update UI handler code here
-	pCmdUI->SetCheck(checkZoomOut == true);
+	pCmdUI->SetCheck(checkZoomOut == TRUE);
 }
 
 
@@ -930,7 +971,7 @@ void CPaintAppView::OnButtonZoomin()
 void CPaintAppView::OnUpdateButtonZoomin(CCmdUI *pCmdUI)
 {
 	// TODO: Add your command update UI handler code here
-	pCmdUI->SetCheck(checkZoomIn == true);
+	pCmdUI->SetCheck(checkZoomIn == TRUE);
 }
 //Save, LodaingFile
 void CPaintAppView::saveToBinaryFile(string filePath)
@@ -1090,30 +1131,11 @@ void CPaintAppView::loadFromBinaryFile(string filePath)
 	}
 	in.close();
 }
-string defaultFilePath = "data.bin";
+
 void CPaintAppView::OnFileSave()
 {
 	if (defaultFilePath == "data.bin") {
-		OPENFILENAME ofn;
-		WCHAR szFileName[MAX_PATH] = L"";
-		ZeroMemory(&ofn, sizeof(ofn));
-
-		ofn.lStructSize = sizeof(ofn); // SEE NOTE BELOW
-		ofn.lpstrFilter = L"Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0";
-		ofn.lpstrFile = szFileName;
-		ofn.nMaxFile = MAX_PATH;
-		ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
-		ofn.lpstrDefExt = L"bin";
-		if (GetSaveFileName(&ofn))
-		{
-			//ghi duong dan va szFileName 
-			wstring ws(szFileName);
-			// your new String
-			string fileName(ws.begin(), ws.end());
-			defaultFilePath = fileName;
-			saveToBinaryFile(fileName);
-			defaultFilePath = fileName;
-		}
+		OnSave();
 	}
 	else
 		saveToBinaryFile(defaultFilePath);
@@ -1131,58 +1153,41 @@ void CPaintAppView::OnFileOpen()
 		delete (*it);
 	}
 	shapes.clear();
-	OPENFILENAME ofn;
 	WCHAR szFilePath[MAX_PATH] = L"";
 	WCHAR szFileTitle[MAX_PATH] = L"";
 
-	ZeroMemory(&ofn, sizeof(ofn));
-
-	ofn.lStructSize = sizeof(ofn); // SEE NOTE BELOW
-	ofn.lpstrFilter = L"Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0";
-	ofn.lpstrFile = szFilePath;
-	ofn.lpstrFileTitle = szFileTitle;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-	ofn.lpstrDefExt = L"bin";
-
-	if (GetOpenFileName(&ofn))
-	{
-		// Do something usefull with the filename stored in szFileName 
-		wstring ws(szFilePath);
-		// your new String
-		string fileName(ws.begin(), ws.end());
-		loadFromBinaryFile(fileName);
-		defaultFilePath = fileName;
-	}
+	OnSave();
 	Invalidate();
 	OnPaint();
 }
 void CPaintAppView::OnFileSaveAs()
 {
 	// TODO: Add your command handler code here
-	OPENFILENAME ofn;
-	WCHAR szFileName[MAX_PATH] = L"";
-
-	ZeroMemory(&ofn, sizeof(ofn));
-
-	ofn.lStructSize = sizeof(ofn); // SEE NOTE BELOW
-	ofn.lpstrFilter = L"Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0";
-	ofn.lpstrFile = szFileName;
-	ofn.nMaxFile = MAX_PATH;
-	ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
-	ofn.lpstrDefExt = L"bin";
-	if (GetSaveFileName(&ofn))
-	{
-		// Do something usefull with the filename stored in szFileName 
-		wstring ws(szFileName);
-		// your new String
-		string fileName(ws.begin(), ws.end());
-		defaultFilePath = fileName;
-		saveToBinaryFile(fileName);
-		defaultFilePath = fileName;
-	}
+	OnSave();
 	Invalidate(false);
 	OnPaint();
+}
+
+void CPaintAppView::OnFileClose()
+{
+	Close close;
+	if (shapes.size() > 0) {
+		close.DoModal();
+	}
+	if (*(close.nClose) == 1) {
+		OnSave();
+		if (defaultFilePath != "data.bin")
+		{
+			shapes.clear();
+			Invalidate();
+		}
+	}
+	else
+	{
+		shapes.clear();
+		Invalidate();
+	}
+	//SetWindowTextA(defaultFilePath);
 }
 
 //lam moi file
@@ -1194,27 +1199,7 @@ void CPaintAppView::OnFileNew()
 		save.DoModal();
 	}
 	if (*(save.checkS) == 1) {
-		OPENFILENAME ofn;
-		WCHAR szFileName[MAX_PATH] = L"";
-
-		ZeroMemory(&ofn, sizeof(ofn));
-
-		ofn.lStructSize = sizeof(ofn); // SEE NOTE BELOW
-		ofn.lpstrFilter = L"Binary Files (*.bin)\0*.bin\0All Files (*.*)\0*.*\0";
-		ofn.lpstrFile = szFileName;
-		ofn.nMaxFile = MAX_PATH;
-		ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
-		ofn.lpstrDefExt = L"bin";
-
-		if (GetSaveFileName(&ofn))
-		{
-			// Do something usefull with the filename stored in szFileName 
-			wstring ws(szFileName);
-			// your new String
-			string fileName(ws.begin(), ws.end());
-			defaultFilePath = fileName;
-			saveToBinaryFile(fileName);
-		}
+		OnSave();
 		if (defaultFilePath != "data.bin")
 		{
 			shapes.clear();
@@ -1230,6 +1215,7 @@ void CPaintAppView::OnFileNew()
 	Invalidate(false);
 	OnPaint();
 }
+
 //set to do
 void CPaintAppView::OnUpdateIndicatorPos(CCmdUI *pCmdUI)
 {

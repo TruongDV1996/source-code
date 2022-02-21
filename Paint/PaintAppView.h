@@ -12,22 +12,23 @@
 #include "Pentagon.h"
 #include "Triagle.h"
 #include <vector>
-#include "Save.h"
+#include "Base.h"
 #include "Elip.h"
+#include <string>
 using namespace std;
+
 class CPaintAppView : public CView
 {
 protected: // create from serialization only
 	CPaintAppView();
 	DECLARE_DYNCREATE(CPaintAppView)
 	//	COLORREF CurrentColor;
-	// Attributes
+	// Attributes;
 public:
 	CPaintAppDoc* GetDocument() const;
-
 	// Operations
-public:
-
+private:
+	void OnSave();
 	// Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
@@ -36,6 +37,7 @@ protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
+	virtual void OnDestroy();
 	// value
 public:
 	vector<CShapeEx*> shapes;
@@ -131,6 +133,7 @@ public:
 	afx_msg void selectShape(CDC *,CPoint pointStart ,CPoint pointEnd);
 	afx_msg void getRect(CPoint start, CPoint end);
 	afx_msg void OnFileSaveAs();
+	afx_msg void OnFileClose();
 
 	afx_msg void OnButtonElip();
 	afx_msg void OnUpdateButtonElip(CCmdUI *pCmdUI);

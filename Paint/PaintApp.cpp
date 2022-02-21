@@ -26,9 +26,6 @@ BEGIN_MESSAGE_MAP(CPaintApp, CWinAppEx)
 	ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinAppEx::OnFilePrintSetup)
 END_MESSAGE_MAP()
 
-
-// CPaintApp construction
-
 CPaintApp::CPaintApp()
 {
 	m_bHiColorIcons = TRUE;
