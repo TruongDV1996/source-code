@@ -1,6 +1,3 @@
-
-// MFC_project.h : main header file for the MFC_project application
-//
 #pragma once
 
 #ifndef __AFXWIN_H__
