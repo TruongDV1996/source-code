@@ -59,6 +59,7 @@ void Square::drawZoomOut(CDC * pDC)
 		pDC->Rectangle(startPoint.x + 50, startPoint.y - 50, endPoint.x - 50, endPoint.y + 50);
 	}
 }
+
 void Square::drawZoomIn(CDC *pDC)
 {
 	startPoint = getStart();
