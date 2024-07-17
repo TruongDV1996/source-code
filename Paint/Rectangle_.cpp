@@ -23,17 +23,21 @@ void Rectangle_::drawZoomOut(CDC * pDC)
 {
 	startPoint = getStart();
 	endPoint = getEnd();
-	if (m_Start.x < m_End.x&&m_Start.y < m_End.y) {
+	if (m_Start.x < m_End.x&&m_Start.y < m_End.y) 
+	{
 		pDC->Rectangle(startPoint.x - 50, startPoint.y - 50, endPoint.x + 50, endPoint.y + 50);
 	}
-	else if (m_Start.x<m_End.x&&m_Start.y >m_End.y) {
+	else if (m_Start.x<m_End.x&&m_Start.y >m_End.y)
+	 {
 		pDC->Rectangle(startPoint.x - 50, startPoint.y + 50, endPoint.x + 50, endPoint.y - 50);
 	}
-	else if (m_Start.x > m_End.x&&m_Start.y >m_End.y) {
+	else if (m_Start.x > m_End.x&&m_Start.y >m_End.y) 
+	{
 		pDC->Rectangle(startPoint.x + 50, startPoint.y + 50, endPoint.x - 50, endPoint.y - 50);
 	}
 	//tren xuong phai trai
-	else if (m_End.x < m_Start.x&&m_Start.y < m_End.y) {
+	else if (m_End.x < m_Start.x&&m_Start.y < m_End.y) 
+	{
 		pDC->Rectangle(startPoint.x + 50, startPoint.y - 50, endPoint.x - 50, endPoint.y + 50);
 	}
 }
