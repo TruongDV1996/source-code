@@ -53,6 +53,8 @@ void Triagle::Draw(CDC * pDC)
 		pDC->Polygon(point, 3);
 		break;
 	}
+	default:
+	break;
 	}
 }
 
