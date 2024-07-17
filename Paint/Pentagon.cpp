@@ -61,6 +61,8 @@ void Pentagon::Draw(CDC * pDC)
 		pDC->Polygon(TPoint, 5);
 		break;
 	}
+	default:
+	break;
 	}
 }
 void Pentagon::drawZoomOut(CDC * pDC)
