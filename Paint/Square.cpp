@@ -7,25 +7,29 @@ Square::Square()
 
 void Square::setData(CPoint m_start, CPoint m_end, COLORREF m_brush, int m_pen,int m_size)
 {
-	if (m_start.x < m_end.x&&m_start.y < m_end.y) {
+	if (m_start.x < m_end.x&&m_start.y < m_end.y) 
+	{
 		this->m_Start = m_start;
 		this->m_End.x = m_end.x;
 		this->m_End.y = m_Start.y + (m_End.x - m_Start.x);
 	}
 	// duoi len trai phai
-	if (m_start.x < m_end.x&&m_start.y > m_end.y) {
+	if (m_start.x < m_end.x&&m_start.y > m_end.y)
+	 {
 		this->m_Start = m_start;
 		this->m_End.y = m_end.y;
 		this->m_End.x = m_Start.x + (m_Start.y - m_End.y);
 	}
 	//tren xuong phai trai
-	if (m_start.x > m_end.x&&m_start.y < m_end.y) {
+	if (m_start.x > m_end.x&&m_start.y < m_end.y) 
+	{
 		this->m_Start = m_start;
 		this->m_End.y = m_end.y;
 		this->m_End.x = m_Start.x - (m_End.y - m_Start.y);
 	}
 	// duoi len phai trai
-	if (m_start.x > m_end.x&&m_start.y > m_end.y) {
+	if (m_start.x > m_end.x&&m_start.y > m_end.y) 
+	{
 		this->m_Start = m_start;
 		this->m_End.y = m_end.y;
 		this->m_End.x = m_Start.x - (m_Start.y - m_End.y);
